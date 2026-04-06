@@ -44,6 +44,22 @@ def build_parser() -> argparse.ArgumentParser:
         help="Display the figure with matplotlib (interactive)",
     )
 
+    viewer = sub.add_parser(
+        "viewer",
+        help="Schematic editor and simulation UI (local web app)",
+    )
+    viewer.add_argument(
+        "--host",
+        default="127.0.0.1",
+        help="Bind address (default: 127.0.0.1)",
+    )
+    viewer.add_argument(
+        "--port",
+        type=int,
+        default=8765,
+        help="Port (default: 8765)",
+    )
+
     return p
 
 
@@ -71,6 +87,14 @@ def cmd_plot(args: argparse.Namespace) -> None:
     plt.close(fig)
 
 
+def cmd_viewer(args: argparse.Namespace) -> None:
+    from sim.schematic_viewer.app import create_app
+
+    app = create_app()
+    print(f"Schematic viewer: http://{args.host}:{args.port}")
+    app.run(host=args.host, port=args.port, debug=False)
+
+
 def main() -> None:
     parser = build_parser()
     args = parser.parse_args()
@@ -78,8 +102,10 @@ def main() -> None:
         cmd_simulate(args)
     elif args.command == "plot":
         cmd_plot(args)
+    elif args.command == "viewer":
+        cmd_viewer(args)
     else:
-        parser.error("Choose subcommand: simulate or plot")
+        parser.error("Choose subcommand: simulate, plot, or viewer")
 
 
 if __name__ == "__main__":

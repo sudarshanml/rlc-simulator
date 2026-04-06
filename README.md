@@ -7,10 +7,11 @@ A correctness-first RLC transient simulator using Modified Nodal Analysis (MNA) 
 - Line-based RLC netlist parser
 - Deterministic node indexing (`0`/`gnd` as ground)
 - MNA matrix stamping for `G`, `C`, and source vector `b(t)`
-- Backward Euler transient solve
+- Backward Euler transient solve (optional **DC operating point** for initial `x`, with `.ic` overriding node voltages)
 - CSV waveform export
 - Matplotlib PNG plots from waveform CSV
 - Interactive `simulate()` / `plot_waveforms()` API
+- Browser **schematic viewer** (draw nodes/branches, set probes, run transient, export netlist)
 - Unit tests for parser and transient behavior
 
 ## Netlist format
@@ -34,6 +35,15 @@ pip install -r requirements.txt
 ```
 
 ## Run
+
+**Schematic viewer** (local web UI):
+
+```bash
+python -m sim.schematic_viewer
+# or: python cli.py viewer
+```
+
+Then open http://127.0.0.1:8765 — use the toolbar to add nodes and `R` / `C` / `L` / `V` / `I`, connect two nodes per branch, set **GND** on the ground node, edit net names so branches share nets as needed, and click **Run**.
 
 Simulate and write CSV:
 

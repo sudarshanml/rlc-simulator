@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>RLC schematic viewer</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}" />
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.6/dist/chart.umd.min.js"></script>
+</head>
+<body>
+  <div class="layout">
+    <header class="header">
+      <h1>RLC schematic viewer</h1>
+      <p class="sub">Drag nodes, place two-terminal parts, then run transient (MNA + Backward Euler).</p>
+    </header>
+
+    <aside class="sidebar">
+      <h2>Tools</h2>
+      <div class="tool-grid">
+        <button type="button" class="tool active" data-mode="select" title="Select / move">Select</button>
+        <button type="button" class="tool" data-mode="junction" title="Add node">+ Node</button>
+        <button type="button" class="tool" data-mode="gnd" title="Mark selected as ground (0)">GND</button>
+        <button type="button" class="tool" data-mode="R" title="Resistor: click two nodes">R</button>
+        <button type="button" class="tool" data-mode="C" title="Capacitor">C</button>
+        <button type="button" class="tool" data-mode="L" title="Inductor">L</button>
+        <button type="button" class="tool" data-mode="V" title="Voltage source">V</button>
+        <button type="button" class="tool" data-mode="I" title="Current source">I</button>
+        <button type="button" class="tool danger" data-action="delete" title="Delete selection">Delete</button>
+      </div>
+
+      <h2>Simulation</h2>
+      <label class="field">Stop time (s)<input id="tstop" type="text" value="0.005" /></label>
+      <label class="field">Timestep (s)<input id="dt" type="text" value="1e-5" /></label>
+      <label class="field">Probes (comma-separated nets)<input id="probes" type="text" value="out" /></label>
+      <div class="row">
+        <button type="button" id="runBtn" class="primary">Run</button>
+        <button type="button" id="netlistBtn">Export netlist</button>
+      </div>
+      <pre id="status" class="status"></pre>
+
+      <h2>Selection</h2>
+      <div id="props" class="props">Click a node or branch.</div>
+
+      <h2>Defaults (new V / I)</h2>
+      <label class="field">Source type
+        <select id="srcKind">
+          <option value="DC">DC</option>
+          <option value="STEP" selected>STEP</option>
+          <option value="PWL">PWL</option>
+        </select>
+      </label>
+      <label class="field">DC value<input id="srcDC" type="text" value="1" /></label>
+      <label class="field">STEP v0, v1, t<input id="srcSTEP" type="text" value="0, 1, 0" placeholder="v0, v1, t_step" /></label>
+      <label class="field">PWL t,v pairs<input id="srcPWL" type="text" value="0,0, 0.001,1" /></label>
+      <label class="field">R (Ω) / C (F) / L (H)<input id="passiveVal" type="text" value="1000" /></label>
+    </aside>
+
+    <main class="main">
+      <div class="canvas-wrap">
+        <canvas id="sch" width="900" height="520"></canvas>
+      </div>
+      <div class="chart-wrap">
+        <canvas id="wave" height="220"></canvas>
+      </div>
+    </main>
+  </div>
+
+  <script src="{{ url_for('static', filename='viewer.js') }}"></script>
+</body>
+</html>
