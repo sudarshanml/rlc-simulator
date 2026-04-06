@@ -9,7 +9,7 @@ from sim.solver import run_transient_be
 
 def build_parser() -> argparse.ArgumentParser:
     p = argparse.ArgumentParser(
-        description="RC transient simulator (MNA + BE): simulate or plot waveforms"
+        description="RLC transient simulator (MNA + BE): simulate or plot waveforms"
     )
     sub = p.add_subparsers(dest="command", required=True)
 

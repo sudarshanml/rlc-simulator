@@ -1,10 +1,10 @@
-# rc-simulator
+# rlc-simulator
 
-A correctness-first RC transient simulator using Modified Nodal Analysis (MNA) and Backward Euler (BE).
+A correctness-first RLC transient simulator using Modified Nodal Analysis (MNA) and Backward Euler (BE).
 
 ## Features
 
-- Line-based RC netlist parser
+- Line-based RLC netlist parser
 - Deterministic node indexing (`0`/`gnd` as ground)
 - MNA matrix stamping for `G`, `C`, and source vector `b(t)`
 - Backward Euler transient solve
@@ -17,6 +17,7 @@ A correctness-first RC transient simulator using Modified Nodal Analysis (MNA) a
 
 - `Rname n1 n2 value` resistor in Ohms
 - `Cname n1 n2 value` capacitor in Farads
+- `Lname n1 n2 value` inductor in Henries
 - `Iname n+ n- DC value` current source
 - `Iname n+ n- STEP v0 v1 t_step` current source step
 - `Vname n+ n- DC value` voltage source
@@ -54,7 +55,7 @@ Optional: `--columns "v(out)"`, `--title "Title"`, `--show` for an interactive w
 from sim import simulate, plot_waveforms
 
 waveforms = simulate("examples/test.sp", duration=200e-12, timestep=1e-12)
-fig = plot_waveforms(waveforms, title="RC step")
+fig = plot_waveforms(waveforms, title="RLC transient")
 ```
 
 `waveforms` maps probe **node name** (e.g. `"out"`) → `Waveform` with `.times`, `.values`, and `.pairs` as `list[(t, v), ...]`.
