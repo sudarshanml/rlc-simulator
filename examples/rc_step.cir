@@ -1,0 +1,4 @@
+R1 in out 1000
+C1 out 0 1e-6
+V1 in 0 STEP 0 1 0
+.probe out
