@@ -2,6 +2,8 @@ from dataclasses import dataclass
 from typing import Dict, List
 
 import numpy as np
+from scipy.sparse import csc_matrix
+from scipy.sparse.linalg import SuperLU, splu
 
 from sim.model import Circuit
 from sim.stamp import MatrixSystem, build_mna_system
@@ -19,10 +21,10 @@ class SimulationResult:
     probes: Dict[str, np.ndarray]
 
 
-def _factorize_dense(A: np.ndarray) -> np.ndarray:
+def _factorize_superlu(A: np.ndarray) -> SuperLU:
     try:
-        return np.linalg.inv(A)
-    except np.linalg.LinAlgError as exc:
+        return splu(csc_matrix(A, dtype=np.float64))
+    except (RuntimeError, ValueError, np.linalg.LinAlgError) as exc:
         raise SolveError("System matrix is singular; check grounding and source setup") from exc
 
 
@@ -50,7 +52,7 @@ def run_transient_be(
             x[idx] = float(v0)
 
     A = system.G + system.C / dt
-    A_inv = _factorize_dense(A)
+    lu = _factorize_superlu(A)
 
     all_v = np.zeros((n_steps + 1, n_voltage), dtype=float)
     all_v[0, :] = x[:n_voltage]
@@ -58,7 +60,7 @@ def run_transient_be(
     for k in range(1, n_steps + 1):
         t = t_arr[k]
         rhs = system.source_fn(t) + (system.C / dt) @ x
-        x = A_inv @ rhs
+        x = lu.solve(rhs)
         all_v[k, :] = x[:n_voltage]
 
     node_names = [system.node_map.idx_to_node[i] for i in range(n_voltage)]
