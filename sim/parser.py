@@ -1,5 +1,5 @@
 from pathlib import Path
-from typing import Iterable, List
+from typing import Iterable, List, Tuple
 
 from sim.model import (
     Capacitor,
@@ -10,6 +10,14 @@ from sim.model import (
     VoltageSource,
     normalize_node,
 )
+
+
+def _pwl_times_non_decreasing(pairs: Tuple[float, ...]) -> bool:
+    n = len(pairs) // 2
+    for i in range(1, n):
+        if pairs[2 * i] < pairs[2 * i - 2]:
+            return False
+    return True
 
 
 class NetlistParseError(ValueError):
@@ -42,6 +50,18 @@ def _parse_source_spec(tokens: List[str], line_no: int) -> SourceSpec:
                 _parse_float(tokens[3], line_no),
             ),
         )
+    if mode == "PWL":
+        rest = tokens[1:]
+        if len(rest) < 2 or len(rest) % 2 != 0:
+            raise NetlistParseError(
+                f"Line {line_no}: PWL expects pairs t1 v1 t2 v2 ..."
+            )
+        parsed = tuple(_parse_float(x, line_no) for x in rest)
+        if not _pwl_times_non_decreasing(parsed):
+            raise NetlistParseError(
+                f"Line {line_no}: PWL time values must be non-decreasing"
+            )
+        return SourceSpec(kind="PWL", params=parsed)
     raise NetlistParseError(f"Line {line_no}: unsupported source mode '{mode}'")
 
 
@@ -114,7 +134,8 @@ def parse_netlist_text(text: str) -> Circuit:
         elif kind == "I":
             if len(toks) < 5:
                 raise NetlistParseError(
-                    f"Line {line_no}: current source format: Iname n+ n- (DC v | STEP v0 v1 t)"
+                    f"Line {line_no}: current source format: "
+                    "Iname n+ n- (DC v | STEP v0 v1 t | PWL t1 v1 ...)"
                 )
             n_plus, n_minus = normalize_node(toks[1]), normalize_node(toks[2])
             spec = _parse_source_spec(toks[3:], line_no)
@@ -124,7 +145,8 @@ def parse_netlist_text(text: str) -> Circuit:
         elif kind == "V":
             if len(toks) < 5:
                 raise NetlistParseError(
-                    f"Line {line_no}: voltage source format: Vname n+ n- (DC v | STEP v0 v1 t)"
+                    f"Line {line_no}: voltage source format: "
+                    "Vname n+ n- (DC v | STEP v0 v1 t | PWL t1 v1 ...)"
                 )
             n_plus, n_minus = normalize_node(toks[1]), normalize_node(toks[2])
             spec = _parse_source_spec(toks[3:], line_no)

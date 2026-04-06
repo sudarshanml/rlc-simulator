@@ -23,7 +23,7 @@ class Capacitor:
 
 @dataclass(frozen=True)
 class SourceSpec:
-    kind: str  # DC or STEP
+    kind: str  # DC, STEP, or PWL
     params: Tuple[float, ...]
 
     def value_at(self, t: float) -> float:
@@ -32,6 +32,48 @@ class SourceSpec:
         if self.kind == "STEP":
             v0, v1, t_step = self.params
             return float(v0 if t < t_step else v1)
+        if self.kind == "PWL":
+            p = self.params
+            n = len(p) // 2
+            pts = [(p[2 * i], p[2 * i + 1]) for i in range(n)]
+            t0, v0 = pts[0]
+            if t <= t0:
+                return float(v0)
+            i = 0
+            while i < n - 1:
+                ta, va = pts[i]
+                tb, vb = pts[i + 1]
+                if ta < tb:
+                    if t < tb:
+                        return float(va + (vb - va) * (t - ta) / (tb - ta))
+                    if t == tb:
+                        j = i + 1
+                        last = vb
+                        while j < n and pts[j][0] == tb:
+                            last = pts[j][1]
+                            j += 1
+                        return float(last)
+                    i += 1
+                else:
+                    # ta == tb: vertical step; left approach uses segment ending at (ta, va)
+                    if t < ta:
+                        if i == 0:
+                            return float(va)
+                        t_prev, v_prev = pts[i - 1]
+                        if t_prev < ta:
+                            return float(
+                                v_prev + (va - v_prev) * (t - t_prev) / (ta - t_prev)
+                            )
+                        return float(va)
+                    if t == ta:
+                        j = i + 1
+                        last = vb
+                        while j < n and pts[j][0] == ta:
+                            last = pts[j][1]
+                            j += 1
+                        return float(last)
+                    i += 1
+            return float(pts[-1][1])
         raise ValueError(f"Unsupported source kind: {self.kind}")
 
 

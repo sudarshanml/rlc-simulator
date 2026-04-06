@@ -1,4 +1,4 @@
-# rc-simualtor
+# rc-simulator
 
 A correctness-first RC transient simulator using Modified Nodal Analysis (MNA) and Backward Euler (BE).
 
@@ -9,6 +9,8 @@ A correctness-first RC transient simulator using Modified Nodal Analysis (MNA) a
 - MNA matrix stamping for `G`, `C`, and source vector `b(t)`
 - Backward Euler transient solve
 - CSV waveform export
+- Matplotlib PNG plots from waveform CSV
+- Interactive `simulate()` / `plot_waveforms()` API
 - Unit tests for parser and transient behavior
 
 ## Netlist format
@@ -32,9 +34,32 @@ pip install -r requirements.txt
 
 ## Run
 
+Simulate and write CSV:
+
 ```bash
-python cli.py --netlist examples/rc_step.cir --tstop 0.005 --dt 1e-5 --output out/waveforms.csv
+python cli.py simulate --netlist examples/rc_step.cir --tstop 0.005 --dt 1e-5 --output out/waveforms.csv
 ```
+
+Plot waveforms (default PNG path: same stem as CSV):
+
+```bash
+python cli.py plot --input out/waveforms.csv --output out/waveforms.png
+```
+
+Optional: `--columns "v(out)"`, `--title "Title"`, `--show` for an interactive window.
+
+## Python API (interactive)
+
+```python
+from sim import simulate, plot_waveforms
+
+waveforms = simulate("examples/test.sp", duration=200e-12, timestep=1e-12)
+fig = plot_waveforms(waveforms, title="RC step")
+```
+
+`waveforms` maps probe **node name** (e.g. `"out"`) → `Waveform` with `.times`, `.values`, and `.pairs` as `list[(t, v), ...]`.
+
+Optional probes: `simulate(..., probes=["out"])`.
 
 ## Test
 

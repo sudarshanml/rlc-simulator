@@ -61,6 +61,21 @@ I1 0 out DC 1e-3
         out_final = result.probes["out"][-1]
         self.assertAlmostEqual(out_final, 2.0, delta=1e-2)
 
+    def test_rc_follows_pwl_ramp_input(self):
+        # Input ramps 0->1 over [0,1ms]; low-pass should track with lag.
+        text = """
+R1 in out 1000
+C1 out 0 1e-6
+V1 in 0 PWL 0 0 1e-3 1 2e-3 1
+.probe out
+"""
+        c = parse_netlist_text(text)
+        dt = 1e-5
+        result = run_transient_be(c, tstop=5e-3, dt=dt)
+        out = result.probes["out"]
+        self.assertLess(out[len(out) // 8], 0.2)
+        self.assertGreater(out[-1], 0.95)
+
 
 if __name__ == "__main__":
     unittest.main()
