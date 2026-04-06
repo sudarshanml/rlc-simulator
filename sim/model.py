@@ -22,6 +22,14 @@ class Capacitor:
 
 
 @dataclass(frozen=True)
+class Inductor:
+    name: str
+    n1: str
+    n2: str
+    value: float  # henries
+
+
+@dataclass(frozen=True)
 class SourceSpec:
     kind: str  # DC, STEP, or PWL
     params: Tuple[float, ...]
@@ -97,6 +105,7 @@ class VoltageSource:
 class Circuit:
     resistors: List[Resistor] = field(default_factory=list)
     capacitors: List[Capacitor] = field(default_factory=list)
+    inductors: List[Inductor] = field(default_factory=list)
     current_sources: List[CurrentSource] = field(default_factory=list)
     voltage_sources: List[VoltageSource] = field(default_factory=list)
     probes: List[str] = field(default_factory=list)
@@ -108,6 +117,8 @@ class Circuit:
             nodes.update([r.n1, r.n2])
         for c in self.capacitors:
             nodes.update([c.n1, c.n2])
+        for ind in self.inductors:
+            nodes.update([ind.n1, ind.n2])
         for i in self.current_sources:
             nodes.update([i.n_plus, i.n_minus])
         for v in self.voltage_sources:

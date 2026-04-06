@@ -36,6 +36,21 @@ R1 b 0 2
         with self.assertRaises(NetlistParseError):
             parse_netlist_text(text)
 
+    def test_inductor_parse(self):
+        text = """
+R1 in mid 1e3
+L1 mid 0 1e-3
+V1 in 0 DC 1
+.probe mid
+"""
+        c = parse_netlist_text(text)
+        self.assertEqual(len(c.inductors), 1)
+        l1 = c.inductors[0]
+        self.assertEqual(l1.name, "L1")
+        self.assertEqual(l1.n1, "mid")
+        self.assertEqual(l1.n2, "0")
+        self.assertAlmostEqual(l1.value, 1e-3)
+
     def test_pwl_voltage_source_parse(self):
         text = """
 R1 in out 1000

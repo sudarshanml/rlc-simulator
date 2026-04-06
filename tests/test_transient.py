@@ -76,6 +76,27 @@ V1 in 0 PWL 0 0 1e-3 1 2e-3 1
         self.assertLess(out[len(out) // 8], 0.2)
         self.assertGreater(out[-1], 0.95)
 
+    def test_series_rl_mid_voltage_exponential_decay(self):
+        # Series V-R-L to ground: v_mid = L di/dt = V * exp(-R/L * t) after unit step at 0.
+        text = """
+R1 in mid 1000
+L1 mid 0 1e-3
+V1 in 0 STEP 0 1 0
+.probe mid
+"""
+        c = parse_netlist_text(text)
+        dt = 2e-7
+        tstop = 1e-5
+        result = run_transient_be(c, tstop=tstop, dt=dt)
+        t = result.times
+        mid = result.probes["mid"]
+        tau = 1e-3 / 1000.0
+        ideal = 1.0 * np.exp(-t / tau)
+        # t=0 sample is pre-step state; compare from first interior time.
+        max_abs_err = np.max(np.abs(mid[1:] - ideal[1:]))
+        self.assertLess(max_abs_err, 0.06)
+        self.assertLess(abs(mid[-1]), 0.05)
+
 
 if __name__ == "__main__":
     unittest.main()

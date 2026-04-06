@@ -5,6 +5,7 @@ from sim.model import (
     Capacitor,
     Circuit,
     CurrentSource,
+    Inductor,
     Resistor,
     SourceSpec,
     VoltageSource,
@@ -131,6 +132,18 @@ def parse_netlist_text(text: str) -> Circuit:
                     f"Line {line_no}: capacitor value must be >= 0"
                 )
             circuit.capacitors.append(Capacitor(name=name, n1=n1, n2=n2, value=val))
+        elif kind == "L":
+            if len(toks) != 4:
+                raise NetlistParseError(
+                    f"Line {line_no}: inductor format: Lname n1 n2 value"
+                )
+            n1, n2 = normalize_node(toks[1]), normalize_node(toks[2])
+            val = _parse_float(toks[3], line_no)
+            if val <= 0:
+                raise NetlistParseError(
+                    f"Line {line_no}: inductor value must be > 0"
+                )
+            circuit.inductors.append(Inductor(name=name, n1=n1, n2=n2, value=val))
         elif kind == "I":
             if len(toks) < 5:
                 raise NetlistParseError(
