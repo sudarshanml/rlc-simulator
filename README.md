@@ -77,3 +77,7 @@ Optional probes: `simulate(..., probes=["out"])`.
 ```bash
 python -m unittest discover -s tests -v
 ```
+
+## Demo video
+
+A short MP4 tour of the CLI (using `examples/test2.sp`) and the web viewer is in **`demo/rlc_simulator_demo.mp4`**. To rebuild it after edits, see **`demo/README.md`**.

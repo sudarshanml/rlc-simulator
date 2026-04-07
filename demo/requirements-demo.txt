@@ -1,0 +1,3 @@
+# Optional: generate demo/rlc_simulator_demo.mp4
+imageio>=2.35
+imageio-ffmpeg>=0.5.1
